@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const WEBSOCKET_URL = "ws://localhost:8080";
+const WEBSOCKET_URL = 'wss://your-backend-name.onrender.com';
 
 function App() {
   const [transactions, setTransactions] = useState([]);
