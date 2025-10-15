@@ -1,12 +1,20 @@
 import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
+import http from 'http';
 
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: PORT});
 
-console.log(`WebSocket server started on port ${PORT}`);
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('WebSocket server is running and healthy.');
+});
 
-// --- Anomaly Detection Rules ---
+const wss = new WebSocketServer({ server });
+
+server.listen(PORT, () => {
+  console.log(`WebSocket server started on port ${PORT}`);
+});
+
 const AMOUNT_THRESHOLD = 50000;
 const HIGH_RISK_COUNTRIES = [
   "Nigeria",
@@ -15,11 +23,10 @@ const HIGH_RISK_COUNTRIES = [
   "United Arab Emirates",
   "Pakistan",
 ];
-const OFF_HOURS_START = 0; // Midnight
-const OFF_HOURS_END = 6; // 6 AM
-// --- NEW RULE PARAMETERS ---
-const VELOCITY_THRESHOLD_COUNT = 3; // 3 or more transactions
-const VELOCITY_THRESHOLD_SECONDS = 30; // within 30 seconds
+const OFF_HOURS_START = 0;
+const OFF_HOURS_END = 6;
+const VELOCITY_THRESHOLD_COUNT = 3;
+const VELOCITY_THRESHOLD_SECONDS = 30;
 
 const COUNTRIES = [
   "United States",
@@ -81,37 +88,30 @@ function detectAnomalies(transaction) {
   const reasons = [];
   const now = Date.now();
 
-  // --- NEW LOGIC: UPDATE AND CHECK TRANSACTION HISTORY ---
-  // 1. Filter out old transactions from our history (older than our time window).
   transactionHistory = transactionHistory.filter(
     (tx) => (now - tx.timestamp) / 1000 < VELOCITY_THRESHOLD_SECONDS
   );
 
-  // 2. Check for recent, similar transactions.
   const similarTransactions = transactionHistory.filter(
     (tx) =>
       tx.sourceCountry === transaction.sourceCountry &&
       tx.destCountry === transaction.destCountry
   );
 
-  // 3. Add the current transaction to the history for future checks.
   transactionHistory.push({
     sourceCountry: transaction.sourceCountry,
     destCountry: transaction.destCountry,
     timestamp: transaction.timestamp,
   });
 
-  // Keep the history array from growing indefinitely.
   if (transactionHistory.length > 200) {
     transactionHistory.shift();
   }
 
-  // Rule 1: High Amount
   if (transaction.amount > AMOUNT_THRESHOLD) {
     reasons.push("Exceeds amount threshold");
   }
 
-  // Rule 2: High-Risk Countries
   if (
     HIGH_RISK_COUNTRIES.includes(transaction.sourceCountry) ||
     HIGH_RISK_COUNTRIES.includes(transaction.destCountry)
@@ -119,13 +119,10 @@ function detectAnomalies(transaction) {
     reasons.push("Involves a high-risk country");
   }
 
-  // Rule 3: Unusual Transaction Time
   const transactionHour = new Date(transaction.timestamp).getHours();
   if (transactionHour >= OFF_HOURS_START && transactionHour < OFF_HOURS_END) {
     reasons.push("Unusual transaction time");
   }
-
-  // Rule 4: Rapid Repeated Transactions
 
   if (similarTransactions.length + 1 >= VELOCITY_THRESHOLD_COUNT) {
     reasons.push("Rapid repeated transactions");
@@ -140,14 +137,13 @@ function detectAnomalies(transaction) {
 
 wss.on("connection", (ws) => {
   console.log("Client connected");
-
   transactionHistory = [];
 
   const intervalId = setInterval(() => {
     const transaction = generateTransaction();
     const processedTransaction = detectAnomalies(transaction);
     ws.send(JSON.stringify(processedTransaction));
-  }, 2000); // Send a new transaction every 2 seconds
+  }, 2000);
 
   ws.on("close", () => {
     console.log("Client disconnected");
@@ -159,5 +155,4 @@ wss.on("connection", (ws) => {
     clearInterval(intervalId);
   });
 });
-
 
