@@ -1,9 +1,10 @@
 import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = process.env.PORT || 8080;
+const wss = new WebSocketServer({ port: PORT, host: '0.0.0.0' });
 
-console.log("WebSocket server started on port 8080");
+console.log(`WebSocket server started on port ${PORT}`);
 
 // --- Anomaly Detection Rules ---
 const AMOUNT_THRESHOLD = 50000;
@@ -158,3 +159,4 @@ wss.on("connection", (ws) => {
     clearInterval(intervalId);
   });
 });
+
