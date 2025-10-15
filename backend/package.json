@@ -1,0 +1,15 @@
+{
+  "name": "tradeguard-backend",
+  "version": "1.0.0",
+  "description": "Real-time transaction monitoring service",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.0.2",
+    "express": "^4.18.2",
+    "uuid": "^13.0.0",
+    "ws": "^8.18.3"
+  }
+}
