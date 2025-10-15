@@ -1,0 +1,8 @@
+# Add the new .gitignore file to Git's tracking
+git add backend/.gitignore
+
+# Commit the change with a clear message
+git commit -m "Add .gitignore for backend to exclude node_modules"
+
+# Push the new commit to your GitHub repository
+git push origin main
