@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 
-// The final, correct URL for your live backend.
 const WEBSOCKET_URL = "wss://transactionanomalybackend.onrender.com";
 
 function App() {
