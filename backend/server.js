@@ -2,7 +2,7 @@ import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
 
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: PORT, host: '0.0.0.0' });
+const wss = new WebSocketServer({ port: PORT});
 
 console.log(`WebSocket server started on port ${PORT}`);
 
@@ -159,4 +159,5 @@ wss.on("connection", (ws) => {
     clearInterval(intervalId);
   });
 });
+
 
